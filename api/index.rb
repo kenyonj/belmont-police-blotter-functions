@@ -1,13 +1,20 @@
 require "faraday"
 require "json"
 require "date"
+require "geocoder"
 
 INCIDENTS_URL = "http://justinkenyon.com/belmont-police-blotter/incidents.json"
 QUERY_FILTER_METHOD_MAPPING = {
   "month_number" => :incidents_by_month,
   "four_digit_year" => :incidents_by_year,
   "street" => :incidents_by_street,
+  "distance_from" => :incidents_by_distance_from,
 }
+EXTRA_QUERY_FILTERS = [
+  "limit",
+  "distance_limit",
+]
+RADIAN_DIVISOR = 57.29577951
 
 Handler = Proc.new do |req, res|
   res.status = 200
@@ -29,7 +36,7 @@ def filter_incidents(query)
   query.each do |key, value|
     filter_method = QUERY_FILTER_METHOD_MAPPING[key]
     next unless filter_method
-    filtered = send(filter_method, value, filtered)
+    filtered = send(filter_method, value, filtered, query)
   end
 
   if query.has_key?("limit")
@@ -43,7 +50,7 @@ def incidents
   JSON.parse(Faraday.get(INCIDENTS_URL).body)
 end
 
-def incidents_by_month(month_number, filtered_incidents)
+def incidents_by_month(month_number, filtered_incidents, query)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
       DateTime.parse(incident["date"]).month.to_s == month_number
@@ -51,7 +58,7 @@ def incidents_by_month(month_number, filtered_incidents)
   )
 end
 
-def incidents_by_year(year, filtered_incidents)
+def incidents_by_year(year, filtered_incidents, query)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
       DateTime.parse(incident["date"]).year.to_s == year
@@ -59,11 +66,38 @@ def incidents_by_year(year, filtered_incidents)
   )
 end
 
-def incidents_by_street(street, filtered_incidents)
+def incidents_by_street(street, filtered_incidents, query)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
       next false unless incident["location"]
       incident["location"].downcase.include?(street.downcase)
+    end
+  )
+end
+
+def incidents_by_distance_from(street_address, filtered_incidents, query)
+  distance_limit = query["distance_limit"].to_i
+  return filtered_incidents unless distance_limit > 0
+  from_lat, from_lng = Geocoder.search(combined_location(street_address)).first&.coordinates
+  return filtered_incidents unless from_lat && from_lng
+
+  from_lat_radian = from_lat / RADIAN_DIVISOR
+  from_lng_radian = from_lng / RADIAN_DIVISOR
+
+  # Distance, d = 3963.0 * arccos[(sin(lat1) * sin(lat2)) + cos(lat1) * cos(lat2) * cos(long2 – long1)]
+
+  filtered_incidents.merge(
+    "items" => filtered_incidents["items"].select do |incident|
+      to_lat_radian = incident["latitude"] / RADIAN_DIVISOR
+      to_lng_radian = incident["longitude"] / RADIAN_DIVISOR
+      distance = 3963.0 * Math.acos(
+        (Math.sin(from_lat_radian) * Math.sin(to_lat_radian)) +
+        Math.cos(from_lat_radian) *
+        Math.cos(to_lat_radian) *
+        Math.cos(to_lng_radian - from_lng_radian)
+      )
+
+      distance <= distance_limit
     end
   )
 end
@@ -73,5 +107,9 @@ def incidents_with_limit(limit, filtered_incidents)
 end
 
 def valid_query?(query)
-  QUERY_FILTER_METHOD_MAPPING.keys.include?(query) || query == "limit"
+  QUERY_FILTER_METHOD_MAPPING.keys.include?(query) || EXTRA_QUERY_FILTERS.include?(query)
+end
+
+def combined_location(street)
+  "#{street}, Belmont, MA 02478"
 end

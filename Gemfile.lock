@@ -20,6 +20,7 @@ GEM
     faraday-net_http_persistent (1.2.0)
     faraday-patron (1.0.0)
     faraday-rack (1.0.0)
+    geocoder (1.7.0)
     multipart-post (2.1.1)
     ruby2_keywords (0.0.5)
 
@@ -28,6 +29,7 @@ PLATFORMS
 
 DEPENDENCIES
   faraday
+  geocoder
 
 BUNDLED WITH
    2.1.4
