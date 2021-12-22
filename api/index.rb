@@ -5,7 +5,7 @@ require "date"
 INCIDENTS_URL = "http://justinkenyon.com/belmont-police-blotter/incidents.json"
 VALID_QUERIES = [
   "month_number",
-  "year",
+  "four_digit_year",
   "street",
 ]
 
