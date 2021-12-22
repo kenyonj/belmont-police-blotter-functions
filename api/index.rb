@@ -30,7 +30,7 @@ def incidents_by_month(month_number)
 
   all_incidents.merge(
     "items" => all_incidents["items"].select do |incident|
-      DateTime.parse(incident["date"]).month == month_number
+      DateTime.parse(incident["date"]).month.to_s == month_number.to_s
     end
   )
 end
