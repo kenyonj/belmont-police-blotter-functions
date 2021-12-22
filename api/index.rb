@@ -76,7 +76,7 @@ def incidents_by_street(street, filtered_incidents, query)
 end
 
 def incidents_by_distance_from(street_address, filtered_incidents, query)
-  distance_limit = query["distance_limit"].to_i
+  distance_limit = query["distance_limit"].to_f
   return filtered_incidents unless distance_limit > 0
   from_lat, from_lng = Geocoder.search(combined_location(street_address)).first&.coordinates
   return filtered_incidents unless from_lat && from_lng
