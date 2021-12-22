@@ -3,11 +3,11 @@ require "json"
 require "date"
 
 INCIDENTS_URL = "http://justinkenyon.com/belmont-police-blotter/incidents.json"
-VALID_QUERIES = [
-  "month_number",
-  "four_digit_year",
-  "street",
-]
+QUERY_FILTER_METHOD_MAPPING = {
+  "month_number" => :incidents_by_month,
+  "four_digit_year" => :incidents_by_year,
+  "street" => :incidents_by_street,
+}
 
 Handler = Proc.new do |req, res|
 	res.status = 200
@@ -24,9 +24,11 @@ end
 
 def filter_incidents(query)
   filtered = incidents
-  filtered = incidents_by_month(query, filtered) if month_query?(query)
-  filtered = incidents_by_year(query, filtered) if year_query?(query)
-  filtered = incidents_by_street(query, filtered) if street_query?(query)
+
+  query.keys.each do |query|
+    filter_method = QUERY_FILTER_METHOD_MAPPING[query][:filter_method]
+    filtered = send(filter_method, query, filtered)
+  end
 
   filtered
 end
@@ -66,17 +68,5 @@ def incidents_by_street(query, filtered_incidents)
 end
 
 def valid_query?(query)
-  VALID_QUERIES.include?(query)
-end
-
-def month_query?(query)
-  query.has_key?("month_number")
-end
-
-def year_query?(query)
-  query.has_key?("four_digit_year")
-end
-
-def street_query?(query)
-  query.has_key?("street")
+  QUERY_FILTER_METHOD_MAPPING.keys.include?(query)
 end
