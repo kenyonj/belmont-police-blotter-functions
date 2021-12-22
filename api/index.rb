@@ -33,7 +33,7 @@ def filter_incidents(query)
   end
 
   if query.has_key?("limit")
-    filtered.first(query["limit"])
+    filtered.first(query["limit"].to_i)
   else
     filtered
   end
