@@ -32,7 +32,11 @@ def filter_incidents(query)
     filtered = send(filter_method, value, filtered)
   end
 
-  filtered
+  if query.has_key?("limit")
+    filtered.first(query["limit"])
+  else
+    filtered
+  end
 end
 
 def incidents
@@ -65,5 +69,5 @@ def incidents_by_street(street, filtered_incidents)
 end
 
 def valid_query?(query)
-  QUERY_FILTER_METHOD_MAPPING.keys.include?(query)
+  QUERY_FILTER_METHOD_MAPPING.keys.include?(query) || query == "limit"
 end
