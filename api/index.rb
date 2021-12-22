@@ -57,8 +57,7 @@ end
 def incidents_by_street(street, filtered_incidents)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
-      puts "Location: #{incident["location"]} ---"
-      puts "Street: #{street} ---"
+      next false unless incident["location"]
       incident["location"].downcase.include?(street.downcase)
     end
   )
