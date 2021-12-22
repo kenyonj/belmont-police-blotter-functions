@@ -26,7 +26,8 @@ def filter_incidents(query)
   filtered = incidents
 
   query.keys.each do |query|
-    filter_method = QUERY_FILTER_METHOD_MAPPING[query][:filter_method]
+    filter_method = QUERY_FILTER_METHOD_MAPPING[query]
+    next unless filter_method
     filtered = send(filter_method, query, filtered)
   end
 
