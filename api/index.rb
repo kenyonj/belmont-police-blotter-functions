@@ -33,7 +33,7 @@ def filter_incidents(query)
   end
 
   if query.has_key?("limit")
-    filtered.first(query["limit"].to_i)
+    incidents_with_limit(query["limit"], filtered)
   else
     filtered
   end
@@ -66,6 +66,10 @@ def incidents_by_street(street, filtered_incidents)
       incident["location"].downcase.include?(street.downcase)
     end
   )
+end
+
+def incidents_with_limit(limit, filtered_incidents)
+  filtered_incidents.merge("items" => filtered_incidents["items"].first(limit.to_i))
 end
 
 def valid_query?(query)
