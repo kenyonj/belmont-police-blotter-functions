@@ -16,7 +16,7 @@ Handler = Proc.new do |req, res|
   filtered_incidents = if req.query.keys.all?(&method(:valid_query?))
     filter_incidents(req.query)
 	else
-    incidents
+    { error: "You are using an invalid query param!" }
 	end
 
   res.body = filtered_incidents.to_json
@@ -27,6 +27,8 @@ def filter_incidents(query)
   filtered = incidents_by_month(query, filtered) if month_query?(query)
   filtered = incidents_by_year(query, filtered) if year_query?(query)
   filtered = incidents_by_street(query, filtered) if street_query?(query)
+
+  filtered
 end
 
 def incidents
