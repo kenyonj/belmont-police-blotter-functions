@@ -25,10 +25,10 @@ end
 def filter_incidents(query)
   filtered = incidents
 
-  query.keys.each do |query_key|
-    filter_method = QUERY_FILTER_METHOD_MAPPING[query_key]
+  query.each do |key, value|
+    filter_method = QUERY_FILTER_METHOD_MAPPING[key]
     next unless filter_method
-    filtered = send(filter_method, query, filtered)
+    filtered = send(filter_method, value, filtered)
   end
 
   filtered
@@ -38,9 +38,7 @@ def incidents
   JSON.parse(Faraday.get(INCIDENTS_URL).body)
 end
 
-def incidents_by_month(query, filtered_incidents)
-  month_number = query["month_number"]
-
+def incidents_by_month(month_number, filtered_incidents)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
       DateTime.parse(incident["date"]).month.to_s == month_number
@@ -48,9 +46,7 @@ def incidents_by_month(query, filtered_incidents)
   )
 end
 
-def incidents_by_year(query, filtered_incidents)
-  year = query["four_digit_year"]
-
+def incidents_by_year(year, filtered_incidents)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
       DateTime.parse(incident["date"]).year.to_s == year
@@ -58,12 +54,12 @@ def incidents_by_year(query, filtered_incidents)
   )
 end
 
-def incidents_by_street(query, filtered_incidents)
-  street = query["street"].downcase
-
+def incidents_by_street(street, filtered_incidents)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
-      incident["location"].downcase.include?(street)
+      puts "Location: #{incident["location"]} ---"
+      puts "Street: #{street} ---"
+      incident["location"].downcase.include?(street.downcase)
     end
   )
 end
