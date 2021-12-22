@@ -10,14 +10,15 @@ QUERY_FILTER_METHOD_MAPPING = {
 }
 
 Handler = Proc.new do |req, res|
-	res.status = 200
-	res["Content-Type"] = "text/json; charset=utf-8"
+  res.status = 200
+  res["Content-Type"] = "text/json; charset=utf-8"
+  res["Access-Control-Allow-Origin"] = "*"
 
   filtered_incidents = if req.query.keys.all?(&method(:valid_query?))
     filter_incidents(req.query)
-	else
+  else
     { error: "You are using an invalid query param!" }
-	end
+  end
 
   res.body = filtered_incidents.to_json
 end
