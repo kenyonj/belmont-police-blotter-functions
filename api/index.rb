@@ -55,7 +55,7 @@ def incidents_by_year(query, filtered_incidents)
   )
 end
 
-def incidents_by_street(street, filtered_incidents)
+def incidents_by_street(query, filtered_incidents)
   street = query["street"].downcase
 
   filtered_incidents.merge(
