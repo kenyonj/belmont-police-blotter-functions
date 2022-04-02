@@ -3,7 +3,7 @@ require "json"
 require "date"
 require "geocoder"
 
-INCIDENTS_URL = "http://justinkenyon.com/belmont-police-blotter/incidents.json"
+INCIDENTS_URL = "https://bpb.heyo.pw/incidents.json"
 QUERY_FILTER_METHOD_MAPPING = {
   "month_number" => :incidents_by_month,
   "four_digit_year" => :incidents_by_year,
