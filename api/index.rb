@@ -12,6 +12,7 @@ QUERY_FILTER_METHOD_MAPPING = {
 }
 EXTRA_QUERY_FILTERS = [
   "limit",
+  "offset",
   "distance_limit",
 ]
 RADIAN_DIVISOR = 57.29577951
@@ -40,7 +41,7 @@ def filter_incidents(query)
   end
 
   if query.has_key?("limit")
-    incidents_with_limit(query["limit"], filtered)
+    incidents_with_limit(query["limit"], query["offset"], filtered)
   else
     filtered
   end
@@ -102,8 +103,8 @@ def incidents_by_distance_from(street_address, filtered_incidents, query)
   )
 end
 
-def incidents_with_limit(limit, filtered_incidents)
-  filtered_incidents.merge("items" => filtered_incidents["items"].first(limit.to_i))
+def incidents_with_limit(limit, offset, filtered_incidents)
+  filtered_incidents.merge("items" => filtered_incidents["items"].slice(offset.to_i, limit.to_i))
 end
 
 def valid_query?(query)
