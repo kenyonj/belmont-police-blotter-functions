@@ -22,11 +22,8 @@ Handler = Proc.new do |req, res|
   res["Content-Type"] = "text/json; charset=utf-8"
   res["Access-Control-Allow-Origin"] = "*"
 
-  filtered_incidents = if req.query.keys.all?(&method(:valid_query?))
-    filter_incidents(req.query)
-  else
-    { error: "You are using an invalid query param!" }
-  end
+  query = req.query.slice(*(QUERY_FILTER_METHOD_MAPPING.keys + EXTRA_QUERY_FILTERS))
+  filtered_incidents = filter_incidents(query)
 
   res.body = filtered_incidents.to_json
 end
@@ -105,10 +102,6 @@ end
 
 def incidents_with_limit(limit, offset, filtered_incidents)
   filtered_incidents.merge("items" => filtered_incidents["items"].slice(offset.to_i, limit.to_i))
-end
-
-def valid_query?(query)
-  QUERY_FILTER_METHOD_MAPPING.keys.include?(query) || EXTRA_QUERY_FILTERS.include?(query)
 end
 
 def combined_location(street)
