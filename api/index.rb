@@ -3,6 +3,7 @@ require "json"
 require "date"
 require "geocoder"
 
+FALLBACK_DATETIME = DateTime.new(1971, 9, 1)
 INCIDENTS_URL = "https://bpb.heyo.pw/incidents.json"
 QUERY_FILTER_METHOD_MAPPING = {
   "month_number" => :incidents_by_month,
@@ -51,7 +52,7 @@ end
 def incidents_by_month(month_number, filtered_incidents, query)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
-      DateTime.parse(incident["date"]).month.to_s == month_number
+      parsed_date(incident["date"]).month.to_s == month_number
     end
   )
 end
@@ -59,7 +60,7 @@ end
 def incidents_by_year(year, filtered_incidents, query)
   filtered_incidents.merge(
     "items" => filtered_incidents["items"].select do |incident|
-      DateTime.parse(incident["date"]).year.to_s == year
+      parsed_date(incident["date"]).year.to_s == year
     end
   )
 end
@@ -107,3 +108,10 @@ end
 def combined_location(street)
   "#{street}, Belmont, MA 02478"
 end
+
+def parsed_date(date_string)
+  DateTime.parse(incident["date"])
+rescue TypeError
+  FALLBACK_DATETIME
+end
+
