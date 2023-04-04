@@ -110,7 +110,7 @@ def combined_location(street)
 end
 
 def parsed_date(date_string)
-  DateTime.parse(incident["date"])
+  DateTime.parse(date_string)
 rescue TypeError
   FALLBACK_DATETIME
 end
